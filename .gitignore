@@ -4,3 +4,7 @@ __pycache__/solve.cpython-310.pyc
 __pycache__/quad.cpython-310.pyc
 __pycache__/mesh.cpython-310.pyc
 __pycache__/integrate.cpython-310.pyc
+*.pyc
+*.aux
+*.log
+*.gz

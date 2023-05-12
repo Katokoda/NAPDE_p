@@ -1,0 +1,94 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[11pt, a4paper, twoside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{geometry}
+\geometry{hmargin=2cm,vmargin=1.5cm}
+\usepackage{graphicx}
+
+\usepackage{xcolor}
+\usepackage{calrsfs} %% for nice calligraphic letters
+
+\usepackage{dsfont}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{comment}
+
+%\usepackage{bbold} % fonction indicatrice avec 1
+\usepackage{dsfont}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\floor}[1]{\lfloor #1 \rfloor} % partie entière
+
+\newcommand{\N}{\mathbb{N}} % nb naturels
+\newcommand{\Z}{\mathbb{Z}} % entiers relatifs
+\newcommand{\R}{\mathbb{R}} % c'est réel
+\newcommand{\Q}{\mathbb{Q}} % nb rationnels
+\renewcommand{\P}{\mathbb{P}} % nb premiers ou proba
+\newcommand{\vp}{\varphi}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\inv}{^{-1}}
+\newcommand{\ind}{\mathds{1}} % indicatrice
+
+\newcommand{\rest}[1]{\raise-.5ex\hbox{\ensuremath|}_{#1}} % restriction
+\newcommand{\grad}{\nabla} % gradient
+\renewcommand{\div}{\text{div}} % divergence
+
+\newcommand{\Ltwo}{L^2(\Omega)}
+\newcommand{\Linf}{L^\infty(\Omega)}
+\newcommand{\Hun}{H^1(\Omega)}
+\newcommand{\Hunz}{H^1_0(\Omega)}
+\newcommand{\Cinfz}{C^\infty_0(\Omega)}
+\newcommand{\intom}{\int_\Omega}
+\newcommand{\intbd}{\oint_{\partial \Omega}}
+
+\newcommand{\norm}[2]{|| #2||_{#1}}
+
+\newcommand{\st}{such that }
+\newcommand{\ie}{i.e. }
+\newcommand{\wrt}{with respect to }
+\newcommand{\sub}{\subseteq}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\title{Project 3: A semilinear elliptic equation}
+\author{}
+\date{Spring 2023}
+\maketitle 
+
+\subsection*{Question 1}
+We want to find the weak formulation of the problem
+$$\begin{cases}  - \Delta u_{n+1} + \alpha u_n^2 u_{n+1} = f & \text{in } \Omega,\\
+u = 0 &\text{on } \partial\Omega,
+\end{cases}$$
+where $u_n$ is the current iterate.\newline
+
+We multiply by a test function $v\in \Hunz$ and integrate to obtain:
+$$\intom fv = \intom \left( -\Delta u_{n+1} v + \alpha u_n^2 u_{n+1} v \right).$$
+We use integration by parts to rewrite the right hand side:
+\begin{align*}
+ \intom (-\Delta u_{n+1} v) &= - \intom \div(\grad u_{n+1}) v \\
+ &= - \intom \div(\grad u_{n+1} v) + \intom \grad u_{n+1} \grad v\\
+ &= - \intbd v (\grad u_{n+1} \cdot \vec n) + \intom \grad u_{n+1} \grad v &\text{by the divergence theorem}\\
+ &=  \intom \grad u_{n+1} \grad v &\text{by } v\in\Hunz,
+\end{align*}
+where we denote $\vec n$ the outer normal vector on the boundary $\partial \Omega$.
+
+The weak formulation is:
+\begin{equation}
+\label{weak_f}
+\intom \left( \grad u_{n+1} \grad v + \alpha u_n^2 u_n{n+1} v\right) = \intom fv \;quad\forall v\in\Hunz.
+\end{equation}
+
+\subsection*{Question 2}
+
+
+\subsection*{Question 3}
+
+
+\end{document}
