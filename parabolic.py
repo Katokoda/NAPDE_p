@@ -297,7 +297,8 @@ def make_video(mesh: Triangulation, solutions, time_instances=None, filename: st
                                  interval=interval,
                                  blit=True)
 
-  anim.save(filename, fps=30, extra_args=['-vcodec', 'libx264'])
+  #anim.save(filename, fps=30, extra_args=['-vcodec', 'libx264'])
+  anim.save(filename, fps=30) # Modified by Sam
 
 
 if __name__ == '__main__':
@@ -308,7 +309,8 @@ if __name__ == '__main__':
 
   xi = np.linspace(0, 2 * np.pi, 21)[:-1]
   circle = np.stack([np.cos(xi), np.sin(xi)], axis=1)
-  mesh = Triangulation.from_polygon(circle, mesh_size=0.1)
+  #mesh = Triangulation.from_polygon(circle, mesh_size=0.1)
+  mesh = Triangulation.from_polygon(circle, mesh_size=0.5) #Modified by Sam
 
   # make the mass and (negative) stiffness matrix
   M = assemble_matrix_from_iterables(mesh, mass_with_reaction_iter(mesh, quadrule))
@@ -326,7 +328,8 @@ if __name__ == '__main__':
   # make sure the first iterate satisfies the boundary condition
   lhs0[bindices] = data(0)
 
-  solutions, time_instances = crank_nicolson(M, A, timestep=0.025,
+  #solutions, time_instances = crank_nicolson(M, A, timestep=0.025,
+  solutions, time_instances = crank_nicolson(M, A, timestep=0.2, #Modified by Sam
                                                    lhs0=lhs0,
                                                    T=3,
                                                    freezeindices=bindices,
