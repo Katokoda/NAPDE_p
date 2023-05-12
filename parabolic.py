@@ -224,7 +224,7 @@ implicit_euler = partial(thetamethod, theta=1)
 crank_nicolson = partial(thetamethod, theta=.5)
 
 
-def make_video(mesh: Triangulation, solutions, time_instances=None, filename: str = 'animation.mp4'):
+def make_video(mesh: Triangulation, solutions, time_instances=None, filename: str = 'animation.gif'):
   """
     Create a video from a sequence of solution vectors that are compatible with `mesh`.
 
@@ -240,7 +240,7 @@ def make_video(mesh: Triangulation, solutions, time_instances=None, filename: st
     filename : :class:`str`
       The filename under which the video is stored. Must end with `.mp4`.
   """
-  assert filename.endswith('.mp4')
+  assert filename.endswith('.gif')
   from matplotlib import animation
   from matplotlib import pyplot as plt
   from matplotlib.tri import Triangulation as pltTriangulation
@@ -309,8 +309,7 @@ if __name__ == '__main__':
 
   xi = np.linspace(0, 2 * np.pi, 21)[:-1]
   circle = np.stack([np.cos(xi), np.sin(xi)], axis=1)
-  #mesh = Triangulation.from_polygon(circle, mesh_size=0.1)
-  mesh = Triangulation.from_polygon(circle, mesh_size=0.5) #Modified by Sam
+  mesh = Triangulation.from_polygon(circle, mesh_size=0.1)
 
   # make the mass and (negative) stiffness matrix
   M = assemble_matrix_from_iterables(mesh, mass_with_reaction_iter(mesh, quadrule))
@@ -328,8 +327,7 @@ if __name__ == '__main__':
   # make sure the first iterate satisfies the boundary condition
   lhs0[bindices] = data(0)
 
-  #solutions, time_instances = crank_nicolson(M, A, timestep=0.025,
-  solutions, time_instances = crank_nicolson(M, A, timestep=0.2, #Modified by Sam
+  solutions, time_instances = crank_nicolson(M, A, timestep=0.025,
                                                    lhs0=lhs0,
                                                    T=3,
                                                    freezeindices=bindices,

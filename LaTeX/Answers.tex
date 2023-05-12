@@ -72,17 +72,22 @@ We multiply by a test function $v\in \Hunz$ and integrate to obtain:
 $$\intom fv = \intom \left( -\Delta u_{n+1} v + \alpha u_n^2 u_{n+1} v \right).$$
 We use integration by parts to rewrite the right hand side:
 \begin{align*}
- \intom (-\Delta u_{n+1} v) &= - \intom \div(\grad u_{n+1}) v \\
- &= - \intom \div(\grad u_{n+1} v) + \intom \grad u_{n+1} \grad v\\
- &= - \intbd v (\grad u_{n+1} \cdot \vec n) + \intom \grad u_{n+1} \grad v &\text{by the divergence theorem}\\
- &=  \intom \grad u_{n+1} \grad v &\text{by } v\in\Hunz,
+ \intom (-\Delta u_{n+1} v)
+ &= - \intom \div(\grad u_{n+1} v) + \intom \grad u_{n+1} \grad v
+ 	&\text{integration by part}
+ \\%%%%%%%%%%%%%
+ &= - \intbd v (\grad u_{n+1} \cdot \vec n) + \intom \grad u_{n+1} \grad v
+ 	&\text{by the divergence theorem}
+ \\%%%%%%%%%%%%%
+ &=  \intom \grad u_{n+1} \grad v
+ 	&\text{by } v\in\Hunz,
 \end{align*}
 where we denote $\vec n$ the outer normal vector on the boundary $\partial \Omega$.
 
 The weak formulation is:
 \begin{equation}
 \label{weak_f}
-\intom \left( \grad u_{n+1} \grad v + \alpha u_n^2 u_n{n+1} v\right) = \intom fv \;quad\forall v\in\Hunz.
+\intom \left( \grad u_{n+1} \grad v + \alpha u_n^2 u_{n+1} v\right) = \intom fv \quad \forall v\in\Hunz.
 \end{equation}
 
 \subsection*{Question 2}
