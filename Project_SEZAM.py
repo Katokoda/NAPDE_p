@@ -14,6 +14,7 @@ from integrate import stiffness_with_diffusivity_iter, mass_with_DATA_reaction_i
 from solve import solve_with_dirichlet_data
 from mesh import Triangulation
 import matplotlib.pylab as plt
+from time import time
 
 def fixed_point_iter(mesh: Triangulation, quadrule: QuadRule, alpha: float, guess_data):
   """
@@ -56,16 +57,16 @@ def fixed_point_iter(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
   #mesh.tripcolor(solution)
   return solution #our "new guess"
   
-def fixed_point_method(alpha : float, treshold : float, iterLimit : int):
+def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : float):
   assert treshold > 0
-  assert iterLimit > 0
+  assert maxIter > 0
   
   square = np.array([ [0, 0],
                       [1, 0],
                       [1, 1],
                       [0, 1] ])
   
-  mesh = Triangulation.from_polygon(square, mesh_size=0.05)
+  mesh = Triangulation.from_polygon(square, mesh_size = size)
   quadrule = seven_point_gauss_6()
   nP = len(mesh.points)
   assert (nP > 100) #To respect the assignement
@@ -74,19 +75,27 @@ def fixed_point_method(alpha : float, treshold : float, iterLimit : int):
   maxDiff = treshold + 1
   
   print("====== Start of fixed-point method ======")
+  tStart = time()
+  print("Alpha =", alpha, "on", nP, "elements")
   
   k = 0
-  differences = [0]*iterLimit
-  while maxDiff > treshold and k < iterLimit:
+  differences = [0]*maxIter
+  while maxDiff > treshold and k < maxIter:
     old_g_data = guess_data
     guess_data = fixed_point_iter(mesh, quadrule, alpha, old_g_data)
     maxDiff = np.max(np.abs(old_g_data - guess_data))
     differences[k] = maxDiff
     k += 1
-    print(k, "/", iterLimit, " : ", maxDiff, sep = '')
+    print(k, "/", maxIter, " - ", maxDiff, sep = '')
+    if ((maxIter - k) < 5 and k != maxIter):
+      print("Warning: reaching iteration treshold.")
+      #If we feel that we don't converge fast enough, we plot the guesses to detect cycles
+      mesh.tripcolor(guess_data)
     
-  print("Final error :", maxDiff)
-  print("====== End of fixed-point method ======")
+  mesh.tripcolor(guess_data)
+  print("Final error:", maxDiff)
+  print("Elapsed time:", time() - tStart, "seconds")
+  print("======= End of fixed-point method =======")
   # ====== Plot
   
   differences = differences[:k]
@@ -100,9 +109,11 @@ def fixed_point_method(alpha : float, treshold : float, iterLimit : int):
   plt.show()
   plt.close()
   
-  mesh.tripcolor(guess_data)
-  
 
 if __name__ == '__main__':
-  fixed_point_method(0.1, 10e-6, 100)
-  fixed_point_method(1, 10e-6, 100)
+  tTot = time()
+  fixed_point_method(0.1, 10e-6, 100, 0.05)
+  fixed_point_method(0.5, 10e-2, 50, 0.1)
+  fixed_point_method(1, 10e-2, 50, 0.1)
+  fixed_point_method(2, 10e-2, 50, 0.1)
+  print("Total elapsed time:", time() - tTot, "seconds")
