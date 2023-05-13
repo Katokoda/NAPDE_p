@@ -110,21 +110,6 @@ def assemble_rhs_from_iterables(mesh: Triangulation, *rhs_iterables) -> np.ndarr
 
   return rhs
 
-def triToSeven(triData, qpoints):
-  """
-  Evaluate a linear fonction defined by its value at the three nodes,
-  on the seven quadrature points.
-
-  Parameters
-  ----------
-  triData : TYPE
-    DESCRIPTION.
-
-  Returns
-  -------
-  None.
-  """
-  return qpoints # TODO : false
 
 def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Callable = None) -> Iterable:
   """
@@ -171,8 +156,33 @@ def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Cal
     # it's a tad faster because it's vectorised
     outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freact(x)[:, _, _]).sum(0)
     yield outer * detBK
+    
+    
+def triToSeven(qpoints, triData):
+  """
+  Evaluate a linear fonction defined by its value at the three nodes,
+  on the seven quadrature points.
+  We work within the reference triangle.
 
-def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, guess_data = None) -> Iterable:
+  Parameters
+  ----------
+  triData : array of len 3
+    the value of our linear fonction at (0,0), (1,0), (0,1)
+  qpoints : np.array of shape (7, 2)
+    the coordinates where we want to find the values
+
+  Returns
+  -------
+  np.array of shape (7,) : value of the function at the seven qpoints
+  """
+  
+  x = qpoints[:, 0]
+  y = qpoints[:, 1]
+  uxy = triData[0] + triData[1] * x + triData[2] * y
+  
+  return uxy
+
+def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha : float, guess_data = None) -> Iterable:
   """
     Iterator for the mass matrix, to be passed into `assemble_matrix_from_iterables`.
 
@@ -185,7 +195,7 @@ def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, guess_
       Instantiation of the `QuadRule` class with fields quadrule.points and
       quadrule.weights. quadrule.simplex_type must be 'triangle'.
     guess_data: :class: `np.array`
-      The data of a function representing the reaction term.
+      The data of a function used in the reaction term.
   """
 
   weights = quadrule.weights
@@ -194,13 +204,13 @@ def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, guess_
 
   # loop over all points (a, b, c) per triangle and the correponding
   # Jacobi matrix and measure
-  for (a, b, c), BK, detBK in zip(mesh.points_iter(), mesh.BK, mesh.detBK):
+  for tri_indices, detBK in zip(mesh.triangles, mesh.detBK):
 
     # define the global points by pushing forward the local quadrature points
     # from the reference element onto the current triangle
-    x = qpoints @ BK.T + a[_]
-    freactx = np.zeros(7) #TODO : on veut calculer la valeur en x
-                          # de la fonction définie par guess_data(a, b, c)
+    
+    ux = triToSeven(qpoints, guess_data[tri_indices])
+    freactx = alpha * ux**2
 
     # outer[i, j] = (weights * shapeF[:, i] * shapeF[:, j] * freactx).sum()
     outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freactx[:, _, _]).sum(0)
@@ -420,6 +430,8 @@ def assemble_neumann_rhs(mesh: Triangulation, quadrule: QuadRule, g: Callable, s
 
 
 if __name__ == '__main__':
+  print("Please run the project file")
+  """
   from matplotlib import pyplot as plt
   from quad import seven_point_gauss_6
   square = np.array([ [0, 0],
@@ -452,3 +464,4 @@ if __name__ == '__main__':
 
   plt.spy(S.todense())
   plt.show()
+  """

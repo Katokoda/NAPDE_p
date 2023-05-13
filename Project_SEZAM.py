@@ -13,8 +13,9 @@ from integrate import stiffness_with_diffusivity_iter, mass_with_DATA_reaction_i
                       
 from solve import solve_with_dirichlet_data
 from mesh import Triangulation
+import matplotlib.pylab as plt
 
-def fixed_point(mesh: Triangulation, quadrule: QuadRule, alpha: float, guess_data):
+def fixed_point_iter(mesh: Triangulation, quadrule: QuadRule, alpha: float, guess_data):
   """
     FEM solution of the problem
 
@@ -28,9 +29,9 @@ def fixed_point(mesh: Triangulation, quadrule: QuadRule, alpha: float, guess_dat
     quadrule: `QuadRule`
       quadrature scheme used to assemble the system matrices and right-hand-side.
     alpha: `float`
-      the parameter #TODO : check what it corresponds to
+      the parameter inside of the reaction term.
     guess_data: `np.array(nP,)`
-      array containing the value of our guess at all nodes (!= quadrature points, BEWARE) #TODO : check number of points
+      array containing the value of our guess at all nodes
     Returns
     -------
     returns the data of a new (hopefully better) guess.
@@ -38,7 +39,7 @@ def fixed_point(mesh: Triangulation, quadrule: QuadRule, alpha: float, guess_dat
   
   # Creation of matrix A, using our paramters to do the reaction term.
   S_iter = stiffness_with_diffusivity_iter(mesh, quadrule) #TODO : check to do StiffM. once for all.
-  M_iter = mass_with_DATA_reaction_iter(mesh, quadrule, alpha * guess_data)
+  M_iter = mass_with_DATA_reaction_iter(mesh, quadrule, alpha, guess_data)
   A = assemble_matrix_from_iterables(mesh, S_iter, M_iter)
   
   #TODO : check to do r.h.s. once for all.
@@ -52,22 +53,56 @@ def fixed_point(mesh: Triangulation, quadrule: QuadRule, alpha: float, guess_dat
 
   solution = solve_with_dirichlet_data(A, rhs, bindices, data)
 
-  mesh.tripcolor(solution)
-  print(solution.shape) # On va __return__ cette solution comme étant notre "nouveau guess"
+  #mesh.tripcolor(solution)
+  return solution #our "new guess"
   
-
-
-if __name__ == '__main__':
-  ALPHA = 0.1
+def fixed_point_method(alpha : float, treshold : float, iterLimit : int):
+  assert treshold > 0
+  assert iterLimit > 0
   
   square = np.array([ [0, 0],
                       [1, 0],
                       [1, 1],
                       [0, 1] ])
+  
   mesh = Triangulation.from_polygon(square, mesh_size=0.05)
-  mesh.plot()
   quadrule = seven_point_gauss_6()
   nP = len(mesh.points)
+  assert (nP > 100) #To respect the assignement
   
   guess_data = np.zeros((nP,))
-  fixed_point(mesh, quadrule, ALPHA, guess_data)
+  maxDiff = treshold + 1
+  
+  print("====== Start of fixed-point method ======")
+  
+  k = 0
+  differences = [0]*iterLimit
+  while maxDiff > treshold and k < iterLimit:
+    old_g_data = guess_data
+    guess_data = fixed_point_iter(mesh, quadrule, alpha, old_g_data)
+    maxDiff = np.max(np.abs(old_g_data - guess_data))
+    differences[k] = maxDiff
+    k += 1
+    print(k, "/", iterLimit, " : ", maxDiff, sep = '')
+    
+  print("Final error :", maxDiff)
+  print("====== End of fixed-point method ======")
+  # ====== Plot
+  
+  differences = differences[:k]
+  plt.plot(range(k), differences, ".-", label = "$||u_n - u_{n+1}||_\infty$")
+  
+  plt.xlabel("Iteration number")
+  plt.ylabel("Infinity norm of difference")
+  plt.title("Fixed-point scheme with alpha = " + str(alpha))
+  plt.legend()
+  plt.grid()
+  plt.show()
+  plt.close()
+  
+  mesh.tripcolor(guess_data)
+  
+
+if __name__ == '__main__':
+  fixed_point_method(0.1, 10e-6, 100)
+  fixed_point_method(1, 10e-6, 100)
