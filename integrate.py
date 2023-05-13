@@ -110,6 +110,21 @@ def assemble_rhs_from_iterables(mesh: Triangulation, *rhs_iterables) -> np.ndarr
 
   return rhs
 
+def triToSeven(triData, qpoints):
+  """
+  Evaluate a linear fonction defined by its value at the three nodes,
+  on the seven quadrature points.
+
+  Parameters
+  ----------
+  triData : TYPE
+    DESCRIPTION.
+
+  Returns
+  -------
+  None.
+  """
+  return qpoints # TODO : false
 
 def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Callable = None) -> Iterable:
   """
@@ -157,6 +172,39 @@ def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Cal
     outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freact(x)[:, _, _]).sum(0)
     yield outer * detBK
 
+def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, guess_data = None) -> Iterable:
+  """
+    Iterator for the mass matrix, to be passed into `assemble_matrix_from_iterables`.
+
+    Parameters
+    ----------
+
+    mesh : :class:`Triangulation`
+      An instantiation of the `Triangulation` class, representing the mesh.
+    quadrule : :class: `QuadRule`
+      Instantiation of the `QuadRule` class with fields quadrule.points and
+      quadrule.weights. quadrule.simplex_type must be 'triangle'.
+    guess_data: :class: `np.array`
+      The data of a function representing the reaction term.
+  """
+
+  weights = quadrule.weights
+  qpoints = quadrule.points
+  shapeF = shape2D_LFE(quadrule)
+
+  # loop over all points (a, b, c) per triangle and the correponding
+  # Jacobi matrix and measure
+  for (a, b, c), BK, detBK in zip(mesh.points_iter(), mesh.BK, mesh.detBK):
+
+    # define the global points by pushing forward the local quadrature points
+    # from the reference element onto the current triangle
+    x = qpoints @ BK.T + a[_]
+    freactx = np.zeros(7) #TODO : on veut calculer la valeur en x
+                          # de la fonction définie par guess_data(a, b, c)
+
+    # outer[i, j] = (weights * shapeF[:, i] * shapeF[:, j] * freactx).sum()
+    outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freactx[:, _, _]).sum(0)
+    yield outer * detBK
 
 def stiffness_with_diffusivity_iter(mesh: Triangulation, quadrule: QuadRule, fdiffuse: Callable = None) -> Iterable:
   """

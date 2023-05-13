@@ -62,11 +62,11 @@
 \maketitle 
 
 \subsection*{Question 1}
-We want to find the weak formulation of the problem
+We want to find the weak formulation to the problem of finding $u_{n+1}$ satisfying
 $$\begin{cases}  - \Delta u_{n+1} + \alpha u_n^2 u_{n+1} = f & \text{in } \Omega,\\
-u = 0 &\text{on } \partial\Omega,
+u_{n+1} = 0 &\text{on } \partial\Omega,
 \end{cases}$$
-where $u_n$ is the current iterate.\newline
+where $u_n$ is the current iterate, with $u_n = 0$ on $\partial\Omega$.\newline
 
 We multiply by a test function $v\in \Hunz$ and integrate to obtain:
 $$\intom fv = \intom \left( -\Delta u_{n+1} v + \alpha u_n^2 u_{n+1} v \right).$$
@@ -87,8 +87,16 @@ where we denote $\vec n$ the outer normal vector on the boundary $\partial \Omeg
 The weak formulation is:
 \begin{equation}
 \label{weak_f}
-\intom \left( \grad u_{n+1} \grad v + \alpha u_n^2 u_{n+1} v\right) = \intom fv \quad \forall v\in\Hunz.
+\intom
+\grad u_{n+1} \grad v
++ 
+\intom
+\alpha u_n^2 u_{n+1} v
+= \intom fv
+\quad \forall v\in\Hunz.
 \end{equation}
+
+We have a stiffness integral, and a mass integral with the reaction term $\alpha u_n^2$, as well as a Poisson right hand side.
 
 \subsection*{Question 2}
 
