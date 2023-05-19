@@ -178,7 +178,7 @@ def triToSeven(qpoints, triData):
   
   x = qpoints[:, 0]
   y = qpoints[:, 1]
-  uxy = triData[0] + triData[1] * x + triData[2] * y
+  uxy = triData[0]*(1 - x - y) + triData[1] * x + triData[2] * y
   
   return uxy
 
@@ -209,7 +209,8 @@ def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha 
     # define the global points by pushing forward the local quadrature points
     # from the reference element onto the current triangle
     
-    ux = triToSeven(qpoints, guess_data[tri_indices])
+    #ux = triToSeven(qpoints, guess_data[tri_indices])
+    ux = shapeF@guess_data[tri_indices]
     freactx = alpha * ux**2
 
     # outer[i, j] = (weights * shapeF[:, i] * shapeF[:, j] * freactx).sum()

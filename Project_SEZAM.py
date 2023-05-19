@@ -103,6 +103,7 @@ def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : fl
   
   plt.xlabel("Iteration number")
   plt.ylabel("Infinity norm of difference")
+  plt.ylim(ymin=0)
   plt.title("Fixed-point scheme with alpha = " + str(alpha))
   plt.legend()
   plt.grid()
@@ -206,8 +207,6 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
 
 if __name__ == '__main__':
   tTot = time()
-  fixed_point_method(0.1, 10e-6, 100, 0.05)
-  fixed_point_method(0.5, 10e-2, 50, 0.1)
-  fixed_point_method(1, 10e-2, 50, 0.1)
-  fixed_point_method(2, 10e-2, 50, 0.1)
+  fixed_point_method(0.1, 10e-6, 300, 0.05)
+  fixed_point_method(2, 10e-6, 300, 0.05)
   print("Total elapsed time:", time() - tTot, "seconds")
