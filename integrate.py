@@ -372,6 +372,53 @@ def poisson_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable) -> It
     yield (shapeF * (weights * fx)[:, _]).sum(0) * detBK
 
 
+def newton_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable, alpha : float, guess_data = None) -> Iterable:
+
+  """
+    Iterator for assembling the right-hand side corresponding to
+    \int -grad(phi) grad(w) - phi*(a w^3 - f)
+    where w = guess_data (is the guess at the previous iteration)
+
+    To be passed into the `assemble_rhs_from_iterables` function.
+
+    Parameters
+    ----------
+
+    mesh : :class:`Triangulation`
+      An instantiation of the `Triangulation` class, representing the mesh.
+    quadrule : :class: `QuadRule`
+      Instantiation of the `QuadRule` class with fields quadrule.points and
+      quadrule.weights. quadrule.simplex_type must be 'triangle'.
+    f : :class: `Callable`
+      Function representing the right hand side as a function of the position.
+      Must take as input a vector of shape (nquadpoints, 2) and return either
+      a vector of shape (nquadpoints,) or (1,).
+      The latter means f is constant.
+  """
+
+  weights = quadrule.weights
+  qpoints = quadrule.points
+  shapeF = shape2D_LFE(quadrule)
+  grad_shapeF = grad_shape2D_LFE(quadrule)
+
+  for (a, b, c), tri_indices, BK, detBK in zip(mesh.points_iter(), mesh.triangles, mesh.BK, mesh.detBK):
+
+    # push forward of the local quadpoints (c.f. mass matrix with reaction term).
+    x = qpoints @ BK.T + a[_]
+
+    # evaluate f at the points
+    fx = f(x)
+    # evaluate w at the points
+    wx = shapeF@guess_data[tri_indices]
+    # first part of the integral
+    
+    
+    # second part of the integral
+    rhs_2 = (shapeF * (weights * (alpha * wx**3 - fx))[:, _]).sum(0) * detBK
+
+    yield (shapeF * (weights * fx)[:, _]).sum(0) * detBK
+
+
 def shape1D_LFE(quadrule: QuadRule) -> np.ndarray:
 
   assert quadrule.simplex_type == 'line'
