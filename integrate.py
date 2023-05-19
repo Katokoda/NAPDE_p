@@ -156,35 +156,11 @@ def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Cal
     # it's a tad faster because it's vectorised
     outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freact(x)[:, _, _]).sum(0)
     yield outer * detBK
-    
-    
-def triToSeven(qpoints, triData):
-  """
-  Evaluate a linear fonction defined by its value at the three nodes,
-  on the seven quadrature points.
-  We work within the reference triangle.
 
-  Parameters
-  ----------
-  triData : array of len 3
-    the value of our linear fonction at (0,0), (1,0), (0,1)
-  qpoints : np.array of shape (7, 2)
-    the coordinates where we want to find the values
-
-  Returns
-  -------
-  np.array of shape (7,) : value of the function at the seven qpoints
-  """
-  
-  x = qpoints[:, 0]
-  y = qpoints[:, 1]
-  uxy = triData[0]*(1 - x - y) + triData[1] * x + triData[2] * y
-  
-  return uxy
-
-def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha : float, guess_data = None) -> Iterable:
+def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha : float, guess_data) -> Iterable:
   """
     Iterator for the mass matrix, to be passed into `assemble_matrix_from_iterables`.
+    We call 'w' to be the function defined by guess_data, its value at the vertices.
 
     Parameters
     ----------
@@ -199,19 +175,17 @@ def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha 
   """
 
   weights = quadrule.weights
-  qpoints = quadrule.points
   shapeF = shape2D_LFE(quadrule)
 
-  # loop over all points (a, b, c) per triangle and the correponding
-  # Jacobi matrix and measure
+  # loop over all points triangles, using the vertex indices and Jacobi measure
   for tri_indices, detBK in zip(mesh.triangles, mesh.detBK):
-
-    # define the global points by pushing forward the local quadrature points
-    # from the reference element onto the current triangle
     
-    #ux = triToSeven(qpoints, guess_data[tri_indices])
-    ux = shapeF@guess_data[tri_indices]
-    freactx = alpha * ux**2
+    #The value of w at points x
+    #wx = shapeF@guess_data[tri_indices]
+    wx = (shapeF * guess_data[_, tri_indices]).sum(1)
+    
+    #The value of the reaction term at points x
+    freactx = alpha * wx**2
 
     # outer[i, j] = (weights * shapeF[:, i] * shapeF[:, j] * freactx).sum()
     outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freactx[:, _, _]).sum(0)
@@ -373,12 +347,12 @@ def poisson_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable) -> It
     yield (shapeF * (weights * fx)[:, _]).sum(0) * detBK
 
 
-def newton_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable, alpha : float, guess_data = None) -> Iterable:
+def newton_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable, alpha : float, guess_data) -> Iterable:
 
   """
     Iterator for assembling the right-hand side corresponding to
-    \int -grad(phi) grad(w) - phi*(a w^3 - f)
-    where w = guess_data (is the guess at the previous iteration)
+      \int -grad(phi) grad(w) - phi*(a w^3 - f)
+    with w := function with nodes guess_data and a := alpha.
 
     To be passed into the `assemble_rhs_from_iterables` function.
 
@@ -395,6 +369,10 @@ def newton_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable, alpha 
       Must take as input a vector of shape (nquadpoints, 2) and return either
       a vector of shape (nquadpoints,) or (1,).
       The latter means f is constant.
+    alpha : float
+      a parameter
+    guess_data: :class: `np.array`
+      The data of the guess function w.
   """
 
   weights = quadrule.weights
@@ -404,20 +382,24 @@ def newton_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable, alpha 
 
   for (a, b, c), tri_indices, BK, detBK in zip(mesh.points_iter(), mesh.triangles, mesh.BK, mesh.detBK):
 
-    # push forward of the local quadpoints (c.f. mass matrix with reaction term).
+    # evaluate gradw at the points
+    gradWx = (grad_shapeF * guess_data[_, tri_indices, _]).sum(1)
+    
+    # first part of the integral
+    insideAtx = (gradWx[:,_,:] * grad_shapeF).sum(-1)
+    rhs_1 = (weights[:,_] * insideAtx).sum(0)
+    
+    # push forward of the local quadpoints.
     x = qpoints @ BK.T + a[_]
 
-    # evaluate f at the points
+    # evaluate f and w at the points
     fx = f(x)
-    # evaluate w at the points
     wx = shapeF@guess_data[tri_indices]
-    # first part of the integral
-    
     
     # second part of the integral
-    rhs_2 = (shapeF * (weights * (alpha * wx**3 - fx))[:, _]).sum(0) * detBK
+    rhs_2 = (shapeF * (weights * (alpha * wx**3 - fx))[:, _]).sum(0)
 
-    yield (shapeF * (weights * fx)[:, _]).sum(0) * detBK
+    yield (-rhs_1 - rhs_2)*detBK
 
 
 def shape1D_LFE(quadrule: QuadRule) -> np.ndarray:
