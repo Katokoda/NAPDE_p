@@ -132,7 +132,7 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
       array containing the value of our guess at all nodes
     Returns
     -------
-    returns the data of a new (hopefully better) guess.
+    returns the solution u, used to update our guess
   """
   
   # Creation of matrix A, using our paramters to do the reaction term.
@@ -140,7 +140,6 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
   M_iter = mass_with_DATA_reaction_iter(mesh, quadrule, 3*alpha, guess_data)
   A = assemble_matrix_from_iterables(mesh, S_iter, M_iter)
   
-  #TODO : check to do r.h.s. once for all.
   # Create the r.h.s. vector.
   f = lambda x: np.array([100])
   P_iter =  newton_rhs_iter(mesh, quadrule, f, alpha, guess_data)
@@ -210,8 +209,8 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
 if __name__ == '__main__':
   tTot = time()
   #fixed_point_method(0.1, 10e-6, 500, 0.05)
-  #fixed_point_method(2, 10e-6, 500, 0.05)
-  #newton_method(0.1, 10e-6, 300, 0.1)
-  #newton_method(2, 10e-6, 300, 0.1)
-  newton_method(5, 10e-6, 300, 0.1)
+  fixed_point_method(2, 10e-6, 500, 0.05)
+  #newton_method(0.1, 10e-6, 500, 0.05)
+  newton_method(2, 10e-6, 500, 0.05)
+  #newton_method(5, 10e-6, 500, 0.05)
   print("Total elapsed time:", time() - tTot, "seconds")
