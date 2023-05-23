@@ -142,8 +142,8 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
   
   # Create the r.h.s. vector.
   f = lambda x: np.array([100])
-  P_iter =  newton_rhs_iter(mesh, quadrule, f, alpha, guess_data)
-  rhs = assemble_rhs_from_iterables(mesh, P_iter)
+  N_iter =  newton_rhs_iter(mesh, quadrule, f, alpha, guess_data)
+  rhs = assemble_rhs_from_iterables(mesh, N_iter)
 
   bindices = mesh.boundary_indices
   data = np.zeros(bindices.shape, dtype=float)
@@ -208,9 +208,9 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
 
 if __name__ == '__main__':
   tTot = time()
-  #fixed_point_method(0.1, 10e-6, 500, 0.05)
+  fixed_point_method(0.1, 10e-6, 500, 0.05)
   fixed_point_method(2, 10e-6, 500, 0.05)
-  #newton_method(0.1, 10e-6, 500, 0.05)
+  newton_method(0.1, 10e-6, 500, 0.05)
   newton_method(2, 10e-6, 500, 0.05)
-  #newton_method(5, 10e-6, 500, 0.05)
+  newton_method(5, 10e-6, 500, 0.05)
   print("Total elapsed time:", time() - tTot, "seconds")

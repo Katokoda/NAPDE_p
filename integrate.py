@@ -380,13 +380,16 @@ def newton_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable, alpha 
   shapeF = shape2D_LFE(quadrule)
   grad_shapeF = grad_shape2D_LFE(quadrule)
 
-  for (a, b, c), tri_indices, BK, detBK in zip(mesh.points_iter(), mesh.triangles, mesh.BK, mesh.detBK):
-
+  for (a, b, c), tri_indices, BK, detBK, BKinv in zip(mesh.points_iter(), mesh.triangles, mesh.BK, mesh.detBK, mesh.BKinv):
+    
+    # evaluate the local gradient of the shape function.
+    grad_glob = (BKinv.T[_, _] * grad_shapeF[..., _, :]).sum(-1)
+    
     # evaluate gradw at the points
-    gradWx = (grad_shapeF * guess_data[_, tri_indices, _]).sum(1)
+    gradWx = (grad_glob * guess_data[_, tri_indices, _]).sum(1)
     
     # first part of the integral
-    insideAtx = (gradWx[:,_,:] * grad_shapeF).sum(-1)
+    insideAtx = (gradWx[:,_,:] * grad_glob).sum(-1)
     rhs_1 = (weights[:,_] * insideAtx).sum(0)
     
     # push forward of the local quadpoints.
