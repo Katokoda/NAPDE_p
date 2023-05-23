@@ -19,8 +19,13 @@
 \usepackage{parskip}
 \usepackage{comment}
 
-%\usepackage{bbold} % fonction indicatrice avec 1
+\usepackage{fancyvrb} % for verbatime for code
+
 \usepackage{dsfont}
+\usepackage{caption}
+\captionsetup[figure]{labelfont=bf} % for title figures
+\usepackage{hyperref} % to reference the figures
+\usepackage{float} % to fix the figure placement because latex is a b*tch
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\floor}[1]{\lfloor #1 \rfloor} % partie entière
 
@@ -45,6 +50,7 @@
 \newcommand{\Cinfz}{C^\infty_0(\Omega)}
 \newcommand{\intom}{\int_\Omega}
 \newcommand{\intbd}{\oint_{\partial \Omega}}
+\renewcommand{\d}{\text{d}}
 
 \newcommand{\norm}[2]{|| #2||_{#1}}
 
@@ -61,7 +67,9 @@
 \date{Spring 2023}
 \maketitle 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 We want to find the weak formulation to the problem of finding $u_{n+1}$ satisfying
 $$\begin{cases}  - \Delta u_{n+1} + \alpha u_n^2 u_{n+1} = f & \text{in } \Omega,\\
 u_{n+1} = 0 &\text{on } \partial\Omega,
@@ -86,7 +94,7 @@ where we denote $\vec n$ the outer normal vector on the boundary $\partial \Omeg
 
 The weak formulation is:
 \begin{equation}
-\label{weak_f}
+\label{weak_f} \tag{E1}
 \intom
 \grad u_{n+1} \grad v
 + 
@@ -98,11 +106,109 @@ The weak formulation is:
 
 We have a stiffness integral, and a mass integral with the reaction term $\alpha u_n^2$, as well as a Poisson right hand side.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 2}
-The code for the implementation of the fixed-point scheme is in the files ???
-For $\alpha=0.1$, the value $||u_n -u_{n+1}||_\infty$ drops below $10^{-6}$ after 11 iterations. For $\alpha=2$, it drops below $10^{-6}$ after ?? iterations, which is much longer.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The code for the implementation of the fixed-point scheme is in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. ADD WHAT EACH FILE CONTAIN
+For $\alpha=0.1$, the value $||u_n -u_{n+1}||_\infty$ drops below $10^{-6}$ after 11 iterations. We obtain the figure \ref{q2fig1} below, by running \verb+fixed_point_method(0.1, 10e-6, 500, 0.05)+.
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/fixed_sol_alpha0.1.png}
+\caption{Solution of the fixed-point scheme for $\alpha=0.1$}
+\label{q2fig1}
+\end{figure}
 
+We also show the convergence rate in the figure \ref{q2fig2}.
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/fixed_conv_alpha0.1.png}
+\caption{Convergence of the fixed-point scheme for $\alpha=0.1$}
+\label{q2fig2}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ For $\alpha=2$, it drops below $10^{-6}$ after 360 iterations, which is much longer. We obtain the figures \ref{q2fig3} and \ref{q2fig4} by running \verb+fixed_point_method(2, 10e-6, 500, 0.05)+.
+ 
+ \begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/fixed_sol_alpha2.png}
+\caption{Solution of the fixed-point scheme for $\alpha=2$}
+\label{q2fig3}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/fixed_conv_alpha2.png}
+\caption{Convergence of the fixed-point scheme for $\alpha=2$}
+\label{q2fig4}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 3}
+The code for the implementation of the Newton scheme is also in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. ADD PRECISE FUNCTIONS
+At each iteration, we need to search $\partial u_n$ that satisfies 
+$$\intom \grad \phi \cdot \grad \partial u_n + 3\alpha u_n^2 \phi \partial u_n \d\Omega = - \intom \grad \phi \cdot \grad u_n + \phi (\alpha u_n^3 - f) \d\Omega \quad \forall \phi\in \Hunz, $$
+$$\partial u_n = 0 \quad \text{on } \partial\Omega.$$
+Then, we seek the solution $u$ as the limit of the recursive sequence $u_{n+1} =u_n + \partial u_n$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+For $\alpha = 0.1$, we obtain $||u_n -u_{n+1}||_\infty < 10^{-6}$ after 5 iterations, the solution is shown in figure \ref{q3fig1} below.
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/newt_sol_alpha0.1.png}
+\caption{Solution with the Newton scheme for $\alpha=0.1$}
+\label{q3fig1}
+\end{figure}
+We see that we find the same solution as with the fixed-point method (see figure \ref{q2fig1}), and we just need 5 less iterations with the Newton scheme (which actually divide the number of iterations by 2 in this case).
+The convergence evolution of the Newton scheme for $\alpha=0.1$ is in the figure \ref{q3fig2}:
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/newt_conv_alpha0.1.png}
+\caption{Convergence of the Newton scheme for $\alpha=0.1$}
+\label{q3fig2}
+\end{figure}
+We obtain those figures by running \verb+newton_method(0.1, 10e-6, 500, 0.05)+.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For $\alpha=2$, we converge in 7 iterations, which is considerably faster than with the fixed-point scheme (we needed 360 iterations to converge with this scheme).
+
+We obtain the following results by running \verb+newton_method(2, 10e-6, 500, 0.05)+:
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/newt_sol_alpha2.png}
+\caption{Solution of the Newton scheme for $\alpha=2$}
+\label{q3fig3}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/newt_conv_alpha2.png}
+\caption{Convergence of the Newton scheme for $\alpha=2$}
+\label{q3fig4}
+\end{figure}
+
+We also see that the solutions are the same for both scheme (figure \ref{q3fig3} above is the same as figure \ref{q2fig3}).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For $\alpha=5$, we also converge in 7 iterations, and obtain the results shown in figures \ref{q3fig5} and \ref{q3fig6} below (by running \verb+newton_method(5, 10e-6, 500, 0.05)+).
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/newt_sol_alpha2.png}
+\caption{Solution of the Newton scheme for $\alpha=2$}
+\label{q3fig5}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale = 0.7]{../Figures/newt_conv_alpha2.png}
+\caption{Convergence of the Newton scheme for $\alpha=2$}
+\label{q3fig6}
+\end{figure}
+
+The Newton scheme fare much better than the fixed-point scheme. The number of iterations to obtain $||u_n -u_{n+1}||_\infty < 10^{-6}$ is considerably smaller. (We ran the scheme for $\alpha=100$, and found that it converges in 10 iterations.)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
