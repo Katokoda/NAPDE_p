@@ -208,9 +208,11 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
 
 if __name__ == '__main__':
   tTot = time()
-  fixed_point_method(0.1, 10e-6, 500, 0.05)
+  fixed_point_method(0.1, 10e-6, 20, 0.05)
   fixed_point_method(2, 10e-6, 500, 0.05)
-  newton_method(0.1, 10e-6, 500, 0.05)
-  newton_method(2, 10e-6, 500, 0.05)
-  newton_method(5, 10e-6, 500, 0.05)
+  newton_method(0.1, 10e-6, 20, 0.05)
+  newton_method(2, 10e-6, 20, 0.05)
+  newton_method(5, 10e-6, 20, 0.05)
   print("Total elapsed time:", time() - tTot, "seconds")
+  print("===== Now : just for fun, really dense mesh =====")
+  newton_method(2, 10e-6, 20, 0.02)
