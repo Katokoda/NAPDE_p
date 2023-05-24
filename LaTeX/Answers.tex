@@ -19,7 +19,7 @@
 \usepackage{parskip}
 \usepackage{comment}
 
-\usepackage{fancyvrb} % for verbatime for code
+\usepackage{fancyvrb} % for verbatim for code
 
 \usepackage{dsfont}
 \usepackage{caption}
@@ -63,7 +63,7 @@
 
 \begin{document}
 \title{Project 3: A semilinear elliptic equation}
-\author{}
+\author{Estelle Baup and Samuel Bélisle}
 \date{Spring 2023}
 \maketitle 
 
@@ -77,12 +77,12 @@ u_{n+1} = 0 &\text{on } \partial\Omega,
 where $u_n$ is the current iterate, with $u_n = 0$ on $\partial\Omega$.\newline
 
 We multiply by a test function $v\in \Hunz$ and integrate to obtain:
-$$\intom fv = \intom \left( -\Delta u_{n+1} v + \alpha u_n^2 u_{n+1} v \right).$$
+$$\intom \left( -\Delta u_{n+1} v + \alpha u_n^2 u_{n+1} v \right) = \intom fv .$$
 We use integration by parts to rewrite the right hand side:
 \begin{align*}
  \intom (-\Delta u_{n+1} v)
  &= - \intom \div(\grad u_{n+1} v) + \intom \grad u_{n+1} \grad v
- 	&\text{integration by part}
+ 	&\text{by integration by part}
  \\%%%%%%%%%%%%%
  &= - \intbd v (\grad u_{n+1} \cdot \vec n) + \intom \grad u_{n+1} \grad v
  	&\text{by the divergence theorem}
@@ -109,7 +109,8 @@ We have a stiffness integral, and a mass integral with the reaction term $\alpha
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 2}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-The code for the implementation of the fixed-point scheme is in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. ADD WHAT EACH FILE CONTAIN
+The code for the implementation of the fixed-point scheme is in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The scheme is ran by the function \verb+fixed_point_method()+ of the file  \verb+Project_SEZAM.py+ , which needs as parameters the value $\alpha$, the threshold for convergence, the maximum of iterations and the mesh size. We used a mesh size of $h=0.05$ to ensure that the mesh contains more than 100 vertices, and the given threshold of $10^{-6}$. We also set the maximum of iterations to 500 to be sure to observe a convergence of our scheme at some step.
+
 For $\alpha=0.1$, the value $||u_n -u_{n+1}||_\infty$ drops below $10^{-6}$ after 11 iterations. We obtain the figure \ref{q2fig1} below, by running \verb+fixed_point_method(0.1, 10e-6, 500, 0.05)+.
 \begin{figure}[H]
 \centering
@@ -118,7 +119,7 @@ For $\alpha=0.1$, the value $||u_n -u_{n+1}||_\infty$ drops below $10^{-6}$ afte
 \label{q2fig1}
 \end{figure}
 
-We also show the convergence rate in the figure \ref{q2fig2}.
+We also show the convergence graph in the figure \ref{q2fig2}.
 \begin{figure}[H]
 \centering
 \includegraphics[scale = 0.7]{../Figures/fixed_conv_alpha0.1.png}
@@ -127,7 +128,7 @@ We also show the convergence rate in the figure \ref{q2fig2}.
 \end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- For $\alpha=2$, it drops below $10^{-6}$ after 360 iterations, which is much longer. We obtain the figures \ref{q2fig3} and \ref{q2fig4} by running \verb+fixed_point_method(2, 10e-6, 500, 0.05)+.
+ For $\alpha=2$, $||u_n -u_{n+1}||_\infty$  drops below $10^{-6}$ after 360 iterations, which is much longer. We obtain the figures \ref{q2fig3} and \ref{q2fig4} by running \verb+fixed_point_method(2, 10e-6, 500, 0.05)+.
  
  \begin{figure}[H]
 \centering
@@ -143,15 +144,15 @@ We also show the convergence rate in the figure \ref{q2fig2}.
 \label{q2fig4}
 \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 3}
-The code for the implementation of the Newton scheme is also in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. ADD PRECISE FUNCTIONS
+The code for the implementation of the Newton scheme is also in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The function that runs the scheme is \verb+newton_method()+, which takes the same parameters as the function for the fixed-point scheme (cf Question 2).
 At each iteration, we need to search $\partial u_n$ that satisfies 
 $$\intom \grad \phi \cdot \grad \partial u_n + 3\alpha u_n^2 \phi \partial u_n \d\Omega = - \intom \grad \phi \cdot \grad u_n + \phi (\alpha u_n^3 - f) \d\Omega \quad \forall \phi\in \Hunz, $$
 $$\partial u_n = 0 \quad \text{on } \partial\Omega.$$
 Then, we seek the solution $u$ as the limit of the recursive sequence $u_{n+1} =u_n + \partial u_n$.
+The solution $\partial u_n$ is computed with the function \verb+newton_iteration()+.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 For $\alpha = 0.1$, we obtain $||u_n -u_{n+1}||_\infty < 10^{-6}$ after 5 iterations, the solution is shown in figure \ref{q3fig1} below.
