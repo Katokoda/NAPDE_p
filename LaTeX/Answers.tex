@@ -70,15 +70,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 1}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-We want to find the weak formulation to the problem of finding $u_{n+1}$ satisfying
+Take $\alpha > 0$ and $f : \Omega \to \R$.
+We want to find the weak formulation to the problem of finding $u_{n+1}$ satisfying the problem
 $$\begin{cases}  - \Delta u_{n+1} + \alpha u_n^2 u_{n+1} = f & \text{in } \Omega,\\
 u_{n+1} = 0 &\text{on } \partial\Omega,
 \end{cases}$$
-where $u_n$ is the current iterate, with $u_n = 0$ on $\partial\Omega$.\newline
+where $u_n : \Omega \to \R$ is fixed, representing the current iterate, with $u_n = 0$ on $\partial\Omega$.\newline
 
-We multiply by a test function $v\in \Hunz$ and integrate to obtain:
+We multiply by a test function $v\in \Hunz$ and integrate over $\Omega$ to obtain:
 $$\intom \left( -\Delta u_{n+1} v + \alpha u_n^2 u_{n+1} v \right) = \intom fv .$$
-We use integration by parts to rewrite the right hand side:
+We use integration by parts to rewrite the left hand side:
 \begin{align*}
  \intom (-\Delta u_{n+1} v)
  &= - \intom \div(\grad u_{n+1} v) + \intom \grad u_{n+1} \grad v
@@ -88,7 +89,7 @@ We use integration by parts to rewrite the right hand side:
  	&\text{by the divergence theorem}
  \\%%%%%%%%%%%%%
  &=  \intom \grad u_{n+1} \grad v
- 	&\text{by } v\in\Hunz,
+ 	&\text{because } v\in\Hunz,
 \end{align*}
 where we denote $\vec n$ the outer normal vector on the boundary $\partial \Omega$.
 
@@ -96,22 +97,26 @@ The weak formulation is:
 \begin{equation}
 \label{weak_f} \tag{E1}
 \intom
-\grad u_{n+1} \grad v
+\grad u_{n+1} \grad \phi
 + 
 \intom
-\alpha u_n^2 u_{n+1} v
-= \intom fv
-\quad \forall v\in\Hunz.
+\alpha u_n^2 u_{n+1} \phi
+= \intom f\phi
+\quad \forall \phi \in\Hunz.
 \end{equation}
 
-We have a stiffness integral, and a mass integral with the reaction term $\alpha u_n^2$, as well as a Poisson right hand side.
+We have a stiffness integral, a mass integral with the reaction term $\alpha u_n^2$, as well as a Poisson right hand side.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 2}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-The code for the implementation of the fixed-point scheme is in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The scheme is ran by the function \verb+fixed_point_method()+ of the file  \verb+Project_SEZAM.py+ , which needs as parameters the value $\alpha$, the threshold for convergence, the maximum of iterations and the mesh size. We used a mesh size of $h=0.05$ to ensure that the mesh contains more than 100 vertices, and the given threshold of $10^{-6}$. We also set the maximum of iterations to 500 to be sure to observe a convergence of our scheme at some step.
+We here focus on the fixed-point scheme as presented in the precedent section.
 
-For $\alpha=0.1$, the value $||u_n -u_{n+1}||_\infty$ drops below $10^{-6}$ after 11 iterations. We obtain the figure \ref{q2fig1} below, by running \verb+fixed_point_method(0.1, 10e-6, 500, 0.05)+.
+The code for our implementation of this scheme is in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The scheme is run by the function \verb+fixed_point_method()+ of the file  \verb+Project_SEZAM.py+ , which needs as parameters the value of $\alpha$, the mesh size, and two arbitrary stropping conditions; We stop when the difference between two iterates is below a given treshold or after a given number of iterations. If that number of iteration treshold is attained before the difference gets low enough, we plot the lasts iterate. This allowed us to debug the code when it was not working correctly, and can help spot cycling behaviours.
+
+We used a mesh size of $h=0.05$ to ensure that the mesh contains more than 100 vertices, and the given threshold of $10^{-6}$. We also set the maximum of iterations to 20 or 500, chosen to be sure to observe a convergence of our scheme at some step, but avoid letting the program run too much if some code or parameter mistake is made.
+
+For $\alpha=0.1$, the difference value $||u_n -u_{n+1}||_\infty$ drops below $10^{-6}$ after 11 iterations. We obtain the figure \ref{q2fig1} below, by running \verb+fixed_point_method(0.1, 10e-6, 500, 0.05)+.
 \begin{figure}[H]
 \centering
 \includegraphics[scale = 0.7]{../Figures/fixed_sol_alpha0.1.png}
@@ -147,10 +152,15 @@ We also show the convergence graph in the figure \ref{q2fig2}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection*{Question 3}
-The code for the implementation of the Newton scheme is also in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The function that runs the scheme is \verb+newton_method()+, which takes the same parameters as the function for the fixed-point scheme (cf Question 2).
+In hope to get a better convergence rate, we implemented the Newton scheme as indicated in the project sheet and below.
+
+The code for our implementation of is in the same files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The function that runs the scheme is \verb+newton_method()+, which takes the same parameters as the function for the fixed-point scheme (cf Question 2).
 At each iteration, we need to search $\partial u_n$ that satisfies 
 $$\intom \grad \phi \cdot \grad \partial u_n + 3\alpha u_n^2 \phi \partial u_n \d\Omega = - \intom \grad \phi \cdot \grad u_n + \phi (\alpha u_n^3 - f) \d\Omega \quad \forall \phi\in \Hunz, $$
 $$\partial u_n = 0 \quad \text{on } \partial\Omega.$$
+
+This is a problem with a the same stiffness and mass integrals, except for the reaction term that becomes $3\alpha u_n^2$. The main complication is the right hand side.
+
 Then, we seek the solution $u$ as the limit of the recursive sequence $u_{n+1} =u_n + \partial u_n$.
 The solution $\partial u_n$ is computed with the function \verb+newton_iteration()+.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -209,6 +219,8 @@ For $\alpha=5$, we also converge in 7 iterations, and obtain the results shown i
 \end{figure}
 
 The Newton scheme fare much better than the fixed-point scheme. The number of iterations to obtain $||u_n -u_{n+1}||_\infty < 10^{-6}$ is considerably smaller. (We ran the scheme for $\alpha=100$, and found that it converges in 10 iterations.)
+
+In the main function of \verb+Project_SEZAM.py+, there is a bonus call, with a smaller grid, just to show off that the scheme converges quickly, even though our implementation is not optimized for it. For instance, we calculate the mass matrix from scratch at each iteration, although it is always the same.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
