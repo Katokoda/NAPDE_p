@@ -104,7 +104,6 @@ def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : fl
   
   plt.xlabel("Iteration number")
   plt.ylabel("Infinity norm of difference")
-  plt.ylim(ymin=0)
   plt.title("Fixed-point scheme with alpha = " + str(alpha))
   plt.legend()
   plt.grid()

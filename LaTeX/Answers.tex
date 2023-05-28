@@ -112,7 +112,7 @@ We have a stiffness integral, a mass integral with the reaction term $\alpha u_n
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 We here focus on the fixed-point scheme as presented in the precedent section.
 
-The code for our implementation of this scheme is in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The scheme is run by the function \verb+fixed_point_method()+ of the file  \verb+Project_SEZAM.py+ , which needs as parameters the value of $\alpha$, the mesh size, and two arbitrary stropping conditions; We stop when the difference between two iterates is below a given treshold or after a given number of iterations. If that number of iteration treshold is attained before the difference gets low enough, we plot the lasts iterate. This allowed us to debug the code when it was not working correctly, and can help spot cycling behaviours.
+The code for our implementation of this scheme is in the files \verb+integrate.py+ and \verb+Project_SEZAM.py+. The scheme is run by the function \verb+fixed_point_method()+ of the file  \verb+Project_SEZAM.py+ , which needs as parameters the value of $\alpha$, the mesh size, and two arbitrary stropping conditions; We stop when the difference between two iterates is below a given treshold or after a given number of iterations. If that number of iteration treshold is attained before the difference gets low enough, we plot the last iterates. This allowed us to debug the code when it was not working correctly, and can help spot cycling behaviours.
 
 We used a mesh size of $h=0.05$ to ensure that the mesh contains more than 100 vertices, and the given threshold of $10^{-6}$. We also set the maximum of iterations to 20 or 500, chosen to be sure to observe a convergence of our scheme at some step, but avoid letting the program run too much if some code or parameter mistake is made.
 
@@ -159,7 +159,7 @@ At each iteration, we need to search $\partial u_n$ that satisfies
 $$\intom \grad \phi \cdot \grad \partial u_n + 3\alpha u_n^2 \phi \partial u_n \d\Omega = - \intom \grad \phi \cdot \grad u_n + \phi (\alpha u_n^3 - f) \d\Omega \quad \forall \phi\in \Hunz, $$
 $$\partial u_n = 0 \quad \text{on } \partial\Omega.$$
 
-This is a problem with a the same stiffness and mass integrals, except for the reaction term that becomes $3\alpha u_n^2$. The main complication is the right hand side.
+This is a problem with the same stiffness and mass integrals, except for the reaction term that becomes $3\alpha u_n^2$. The main complication is the right hand side.
 
 Then, we seek the solution $u$ as the limit of the recursive sequence $u_{n+1} =u_n + \partial u_n$.
 The solution $\partial u_n$ is computed with the function \verb+newton_iteration()+.
@@ -172,7 +172,7 @@ For $\alpha = 0.1$, we obtain $||u_n -u_{n+1}||_\infty < 10^{-6}$ after 5 iterat
 \caption{Solution with the Newton scheme for $\alpha=0.1$}
 \label{q3fig1}
 \end{figure}
-We see that we find the same solution as with the fixed-point method (see figure \ref{q2fig1}), and we just need 5 less iterations with the Newton scheme (which actually divide the number of iterations by 2 in this case).
+We see that we find the same solution as with the fixed-point method (see figure \ref{q2fig1}), and we just needed 5 less iterations with the Newton scheme compared to the fixed-point scheme.
 The convergence evolution of the Newton scheme for $\alpha=0.1$ is in the figure \ref{q3fig2}:
 \begin{figure}[H]
 \centering
