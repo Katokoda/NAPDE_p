@@ -17,6 +17,7 @@ from util import np
 import matplotlib.pylab as plt
 from time import time
 
+
 def fixed_point_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, guess_data):
   """
     FEM solution of the problem
@@ -27,19 +28,19 @@ def fixed_point_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float,
     Parameters
     ----------
     mesh: `Triangulation`
-      The mesh that represents the domain Ω
+      The mesh that represents the domain Ω.
     quadrule: `QuadRule`
       quadrature scheme used to assemble the system matrices and right-hand-side.
     alpha: `float`
-      the parameter inside of the reaction term.
+      the parameter inside the reaction term.
     guess_data: `np.array/(nP,))`
-      array containing the value of our guess at all nodes
+      array containing the value of our guess at all nodes.
     Returns
     -------
     returns the data of a new (hopefully better) guess.
   """
   
-  # Creation of matrix A, using our paramters to do the reaction term.
+  # Creation of matrix A, using our parameters to do the reaction term.
   S_iter = stiffness_with_diffusivity_iter(mesh, quadrule)
   M_iter = mass_with_DATA_reaction_iter(mesh, quadrule, alpha, guess_data)
   A = assemble_matrix_from_iterables(mesh, S_iter, M_iter)
@@ -58,7 +59,8 @@ def fixed_point_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float,
 
   solution = solve_with_dirichlet_data(A, rhs, bindices, data)
   return solution # Our new guess.
-  
+ 
+
 def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : float):
   """
   Will use iteratively fixed_point_iteration() to update guess_data.
@@ -69,12 +71,12 @@ def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : fl
     treshold: `float`
       the difference treshold, to decide when we consider it converged.
     maxIter: `int`
-      max number of iterations allowed.
+      maximum number of iterations allowed.
     size: `float`
       the size of the grid.
     Returns nothing.
     ----------
-    It plot the convergence rate and the final guess.
+    It plots the convergence rate and the final guess.
     If maxIter is reached, it plots the last guesses.
   """
   assert treshold > 0
@@ -143,19 +145,18 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
     Parameters
     ----------
     mesh: `Triangulation`
-      The mesh that represents the domain Ω
+      The mesh that represents the domain Ω.
     quadrule: `QuadRule`
       quadrature scheme used to assemble the system matrices and right-hand-side.
     alpha: `float`
-      the parameter inside of the reaction term.
+      the parameter inside the reaction term.
     guess_data: `np.array((nP,))`
-      array containing the value of our guess at all nodes
-    Returns
+      array containing the value of our guess at all nodes.
     -------
-    returns the solution u, used to update our guess
+    returns the solution u, used to update our guess.
   """
   
-  # Creation of matrix A, using our paramters to do the reaction term.
+  # Creation of matrix A, using our parameters to do the reaction term.
   S_iter = stiffness_with_diffusivity_iter(mesh, quadrule)
   M_iter = mass_with_DATA_reaction_iter(mesh, quadrule, 3*alpha, guess_data)
   A = assemble_matrix_from_iterables(mesh, S_iter, M_iter)
@@ -173,6 +174,7 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
 
   solution = solve_with_dirichlet_data(A, rhs, bindices, data)
   return solution
+
   
 def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
   """
@@ -184,12 +186,12 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
     treshold: `float`
       the difference treshold, to decide when we consider it converged.
     maxIter: `int`
-      max number of iterations allowed.
+      maximum number of iterations allowed.
     size: `float`
       the size of the grid.
     Returns nothing.
     ----------
-    It plot the convergence rate and the final guess.
+    It plots the convergence rate and the final guess.
     If maxIter is reached, it plots the last guesses.
   """
   assert treshold > 0
@@ -204,7 +206,7 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
   quadrule = seven_point_gauss_6()
   
   nP = len(mesh.points)
-  assert (nP > 100) # To make sure we respect the assignement.
+  assert (nP > 100) # To make sure we respect the assignment.
   
   guess_data = np.zeros((nP,))
   maxDiff = treshold + 1

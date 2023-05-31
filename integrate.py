@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@author: Jochen Hinz
+@author: Jochen Hinz, Sam (Samuel Bélisle) and Ez (Estelle Baup)
 """
 
 from util import np, _
@@ -15,7 +15,7 @@ from typing import Iterable, Callable
 
 def shape2D_LFE(quadrule: QuadRule) -> np.ndarray:
   """
-    Return the shape functions evaluated in the quadrature points
+    Returns the shape functions evaluated in the quadrature points
     associated with ``quadrule`` for the three local first order
     lagrangian finite element basis functions (hat functions) over the
     unit triangle.
@@ -45,7 +45,7 @@ def shape2D_LFE(quadrule: QuadRule) -> np.ndarray:
 
 def grad_shape2D_LFE(quadrule: QuadRule) -> np.ndarray:
   """
-    Return the local gradient of the shape functions evaluated in
+    Returns the local gradient of the shape functions evaluated in
     the quadrature points associated with ``quadrule`` for the three local
     first order lagrangian finite element basis functions (hat functions)
     over the unit triangle.
@@ -78,7 +78,7 @@ def grad_shape2D_LFE(quadrule: QuadRule) -> np.ndarray:
 
 
 def assemble_matrix_from_iterables(mesh: Triangulation, *system_matrix_iterables) -> sparse.csr_matrix:
-  """ Assemble sparse matrix from triangulation and system matrix iterables.
+  """ Assembles sparse matrix from triangulation and system matrix iterables.
       For examples, see end of the script. """
 
   triangles = mesh.triangles
@@ -97,7 +97,7 @@ def assemble_matrix_from_iterables(mesh: Triangulation, *system_matrix_iterables
 
 
 def assemble_rhs_from_iterables(mesh: Triangulation, *rhs_iterables) -> np.ndarray:
-  """ Assemble right hand side from triangulation and local load vector iterables.
+  """ Assembles right hand side from triangulation and local load vector iterables.
       For examples, see end of the script. """
 
   triangles = mesh.triangles
@@ -117,7 +117,6 @@ def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Cal
 
     Parameters
     ----------
-
     mesh : :class:`Triangulation`
       An instantiation of the `Triangulation` class, representing the mesh.
     quadrule : :class: `QuadRule`
@@ -143,7 +142,7 @@ def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Cal
   qpoints = quadrule.points
   shapeF = shape2D_LFE(quadrule)
 
-  # loop over all points (a, b, c) per triangle and the correponding
+  # loop over all points (a, b, c) per triangle and the corresponding
   # Jacobi matrix and measure
   for (a, b, c), BK, detBK in zip(mesh.points_iter(), mesh.BK, mesh.detBK):
 
@@ -157,6 +156,7 @@ def mass_with_reaction_iter(mesh: Triangulation, quadrule: QuadRule, freact: Cal
     outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freact(x)[:, _, _]).sum(0)
     yield outer * detBK
 
+
 def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha : float, guess_data) -> Iterable:
   """
     Iterator for the mass matrix, to be passed into `assemble_matrix_from_iterables`.
@@ -164,7 +164,6 @@ def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha 
 
     Parameters
     ----------
-
     mesh : :class:`Triangulation`
       An instantiation of the `Triangulation` class, representing the mesh.
     quadrule : :class: `QuadRule`
@@ -191,13 +190,13 @@ def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha 
     outer = (weights[:, _, _] * shapeF[..., _] * shapeF[:, _] * freactx[:, _, _]).sum(0)
     yield outer * detBK
 
+
 def stiffness_with_diffusivity_iter(mesh: Triangulation, quadrule: QuadRule, fdiffuse: Callable = None) -> Iterable:
   """
     Iterator for the stiffness matrix, to be passed into `assemble_matrix_from_iterables`.
 
     Parameters
     ----------
-
     Exactly the same as in `mass_with_reaction_iter`.
     freact -> fdiffuse and has to be implemented in the exact same way.
 
@@ -213,7 +212,7 @@ def stiffness_with_diffusivity_iter(mesh: Triangulation, quadrule: QuadRule, fdi
   qpoints = quadrule.points
   grad_shapeF = grad_shape2D_LFE(quadrule)
 
-  # loop over all points (a, b, c) per triangle and the correponding
+  # loop over all points (a, b, c) per triangle and the corresponding
   # Jacobi matrix and measure
   for (a, b, c), BK, BKinv, detBK in zip(mesh.points_iter(), mesh.BK, mesh.BKinv, mesh.detBK):
 
@@ -319,7 +318,6 @@ def poisson_rhs_iter(mesh: Triangulation, quadrule: QuadRule, f: Callable) -> It
 
     Parameters
     ----------
-
     mesh : :class:`Triangulation`
       An instantiation of the `Triangulation` class, representing the mesh.
     quadrule : :class: `QuadRule`
@@ -414,13 +412,12 @@ def shape1D_LFE(quadrule: QuadRule) -> np.ndarray:
 
 def assemble_neumann_rhs(mesh: Triangulation, quadrule: QuadRule, g: Callable, selecter: Callable) -> np.ndarray:
   """
-    Assemble the right-hand-side vector corresponding to the weak imposition
+    Assembles the right-hand-side vector corresponding to the weak imposition
     of Neumann data, i.e.
     \int_{\Gamma_N} phi_i g d \gamma
 
     Parameters
     ----------
-
     mesh : :class:`Triangulation`
       An instantiation of the `Triangulation` class, representing the mesh.
     quadrule : :class: `QuadRule`
@@ -460,7 +457,6 @@ def assemble_neumann_rhs(mesh: Triangulation, quadrule: QuadRule, g: Callable, s
     rhs[line] += (shapeF * (weights * gx)[:, _]).sum(0) * detBK
 
   return rhs
-
 
 if __name__ == '__main__':
   from matplotlib import pyplot as plt
