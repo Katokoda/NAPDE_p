@@ -5,15 +5,15 @@ Created on Fri May 12 14:55:34 2023
 @author: Samuel
 """
 
-from util import np
-from quad import QuadRule, seven_point_gauss_6
 from integrate import stiffness_with_diffusivity_iter, mass_with_DATA_reaction_iter, \
                       assemble_matrix_from_iterables, \
                       poisson_rhs_iter, assemble_rhs_from_iterables, \
                       newton_rhs_iter
-                      
-from solve import solve_with_dirichlet_data
 from mesh import Triangulation
+from quad import QuadRule, seven_point_gauss_6
+from solve import solve_with_dirichlet_data
+from util import np
+
 import matplotlib.pylab as plt
 from time import time
 
@@ -32,7 +32,7 @@ def fixed_point_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float,
       quadrature scheme used to assemble the system matrices and right-hand-side.
     alpha: `float`
       the parameter inside of the reaction term.
-    guess_data: `np.array(nP,)`
+    guess_data: `np.array/(nP,))`
       array containing the value of our guess at all nodes
     Returns
     -------
@@ -40,25 +40,43 @@ def fixed_point_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float,
   """
   
   # Creation of matrix A, using our paramters to do the reaction term.
-  S_iter = stiffness_with_diffusivity_iter(mesh, quadrule) #TODO : check to do StiffM. once for all.
+  S_iter = stiffness_with_diffusivity_iter(mesh, quadrule)
   M_iter = mass_with_DATA_reaction_iter(mesh, quadrule, alpha, guess_data)
   A = assemble_matrix_from_iterables(mesh, S_iter, M_iter)
+    # We could create a Stiffness matrix only one time
+    # and receive it as S at each iteration from main loop.
+    # then A = S + assemble_matrix_from_iterables(mesh, M_iter).
   
-  #TODO : check to do r.h.s. once for all.
   # Create the r.h.s. vector.
   f = lambda x: np.array([100])
   P_iter =  poisson_rhs_iter(mesh, quadrule, f)
   rhs = assemble_rhs_from_iterables(mesh, P_iter)
+    # We also could create the r.h.s. only one time.
 
   bindices = mesh.boundary_indices
   data = np.zeros(bindices.shape, dtype=float)
 
   solution = solve_with_dirichlet_data(A, rhs, bindices, data)
-
-  #mesh.tripcolor(solution)
-  return solution #our "new guess"
+  return solution # Our new guess.
   
 def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : float):
+  """
+  Will use iteratively fixed_point_iteration() to update guess_data.
+    Parameters
+    ----------
+    alpha: `float`
+      the parameter as in the problem sheet.
+    treshold: `float`
+      the difference treshold, to decide when we consider it converged.
+    maxIter: `int`
+      max number of iterations allowed.
+    size: `float`
+      the size of the grid.
+    Returns nothing.
+    ----------
+    It plot the convergence rate and the final guess.
+    If maxIter is reached, it plots the last guesses.
+  """
   assert treshold > 0
   assert maxIter > 0
   
@@ -69,8 +87,9 @@ def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : fl
   
   mesh = Triangulation.from_polygon(square, mesh_size = size)
   quadrule = seven_point_gauss_6()
+  
   nP = len(mesh.points)
-  assert (nP > 100) #To respect the assignement
+  assert (nP > 100) # To make sure we respect the assignement.
   
   guess_data = np.zeros((nP,))
   maxDiff = treshold + 1
@@ -87,18 +106,20 @@ def fixed_point_method(alpha : float, treshold : float, maxIter : int, size : fl
     maxDiff = np.max(np.abs(old_g_data - guess_data))
     differences[k] = maxDiff
     k += 1
+    
     print(k, "/", maxIter, " - ", maxDiff, sep = '')
     if ((maxIter - k) < 5 and k != maxIter):
       print("Warning: reaching iteration treshold.")
-      #If we feel that we don't converge fast enough, we plot the guesses to detect cycles
+      # If we feel that we don't converge fast enough,
+      # we plot the last guesses to detect cycles.
       mesh.tripcolor(guess_data)
     
   mesh.tripcolor(guess_data)
   print("Final error:", maxDiff)
   print("Elapsed time:", time() - tStart, "seconds")
   print("======= End of fixed-point method =======")
-  # ====== Plot
   
+  # ====== Plot
   differences = differences[:k]
   plt.plot(range(k), differences, ".-", label = "$||u_n - u_{n+1}||_\infty$")
   
@@ -127,7 +148,7 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
       quadrature scheme used to assemble the system matrices and right-hand-side.
     alpha: `float`
       the parameter inside of the reaction term.
-    guess_data: `np.array(nP,)`
+    guess_data: `np.array((nP,))`
       array containing the value of our guess at all nodes
     Returns
     -------
@@ -135,9 +156,12 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
   """
   
   # Creation of matrix A, using our paramters to do the reaction term.
-  S_iter = stiffness_with_diffusivity_iter(mesh, quadrule) #TODO : check to do StiffM. once for all.
+  S_iter = stiffness_with_diffusivity_iter(mesh, quadrule)
   M_iter = mass_with_DATA_reaction_iter(mesh, quadrule, 3*alpha, guess_data)
   A = assemble_matrix_from_iterables(mesh, S_iter, M_iter)
+    # We could create a Stiffness matrix only one time
+    # and receive it as S at each iteration from main loop.
+    # then A = S + assemble_matrix_from_iterables(mesh, M_iter).
   
   # Create the r.h.s. vector.
   f = lambda x: np.array([100])
@@ -148,11 +172,26 @@ def newton_iteration(mesh: Triangulation, quadrule: QuadRule, alpha: float, gues
   data = np.zeros(bindices.shape, dtype=float)
 
   solution = solve_with_dirichlet_data(A, rhs, bindices, data)
-
-  #mesh.tripcolor(solution)
   return solution
   
 def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
+  """
+  Will use iteratively newton_method_iteration() to update guess_data.
+    Parameters
+    ----------
+    alpha: `float`
+      the parameter as in the problem sheet.
+    treshold: `float`
+      the difference treshold, to decide when we consider it converged.
+    maxIter: `int`
+      max number of iterations allowed.
+    size: `float`
+      the size of the grid.
+    Returns nothing.
+    ----------
+    It plot the convergence rate and the final guess.
+    If maxIter is reached, it plots the last guesses.
+  """
   assert treshold > 0
   assert maxIter > 0
   
@@ -163,8 +202,9 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
   
   mesh = Triangulation.from_polygon(square, mesh_size = size)
   quadrule = seven_point_gauss_6()
+  
   nP = len(mesh.points)
-  assert (nP > 100) #To respect the assignement
+  assert (nP > 100) # To make sure we respect the assignement.
   
   guess_data = np.zeros((nP,))
   maxDiff = treshold + 1
@@ -181,18 +221,20 @@ def newton_method(alpha : float, treshold : float, maxIter : int, size : float):
     maxDiff = np.max(np.abs(delta_data))
     differences[k] = maxDiff
     k += 1
+    
     print(k, "/", maxIter, " - ", maxDiff, sep = '')
     if ((maxIter - k) < 5 and k != maxIter):
       print("Warning: reaching iteration treshold.")
-      #If we feel that we don't converge fast enough, we plot the guesses to detect cycles
+      # If we feel that we don't converge fast enough,
+      # we plot the last guesses to detect cycles.
       mesh.tripcolor(guess_data)
     
   mesh.tripcolor(guess_data)
   print("Final error:", maxDiff)
   print("Elapsed time:", time() - tStart, "seconds")
   print("======= End of the Newton method =======")
-  # ====== Plot
   
+  # ====== Plot
   differences = differences[:k]
   plt.plot(range(k), differences, ".-", label = "$||u_n - u_{n+1}||_\infty$")
   
@@ -213,5 +255,5 @@ if __name__ == '__main__':
   newton_method(2, 10e-6, 20, 0.05)
   newton_method(5, 10e-6, 20, 0.05)
   print("Total elapsed time:", time() - tTot, "seconds")
-  print("===== Now : just for fun, really dense mesh =====")
+  print("===== Now : just for fun, a really dense mesh =====")
   newton_method(2, 10e-6, 20, 0.02)

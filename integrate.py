@@ -170,7 +170,7 @@ def mass_with_DATA_reaction_iter(mesh: Triangulation, quadrule: QuadRule, alpha 
     quadrule : :class: `QuadRule`
       Instantiation of the `QuadRule` class with fields quadrule.points and
       quadrule.weights. quadrule.simplex_type must be 'triangle'.
-    guess_data: :class: `np.array`
+    guess_data: :class: `np.array((nP,))`
       The data of a function used in the reaction term.
   """
 
@@ -463,8 +463,6 @@ def assemble_neumann_rhs(mesh: Triangulation, quadrule: QuadRule, g: Callable, s
 
 
 if __name__ == '__main__':
-  print("Please run the project file")
-  """
   from matplotlib import pyplot as plt
   from quad import seven_point_gauss_6
   square = np.array([ [0, 0],
@@ -497,4 +495,3 @@ if __name__ == '__main__':
 
   plt.spy(S.todense())
   plt.show()
-  """
