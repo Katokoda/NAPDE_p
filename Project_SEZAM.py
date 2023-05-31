@@ -2,7 +2,7 @@
 """
 Created on Fri May 12 14:55:34 2023
 
-@author: Samuel
+@author: Sam (Samuel Bélisle) and Ez (Estelle Baup)
 """
 
 from integrate import stiffness_with_diffusivity_iter, mass_with_DATA_reaction_iter, \
